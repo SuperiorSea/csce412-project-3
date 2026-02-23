@@ -11,4 +11,4 @@ struct Request {
     // constructors
     Request();
     Request(IPAddress& in, IPAddress& out, int time, char job);
-}
+};

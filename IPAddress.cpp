@@ -36,7 +36,7 @@ IPAddress::IPAddress(std::string addr) {
 
 // methods
 
-unsigned int IPAddress::get_value() {
+unsigned int IPAddress::getValue() {
     return address;
 }
 

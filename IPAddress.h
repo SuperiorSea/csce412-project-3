@@ -17,7 +17,7 @@ class IPAddress {
         IPAddress(std::string addr);
 
         // returns the address as an unsigned int
-        unsigned int get_value();
+        unsigned int getValue();
 
         // comparison operators
         bool operator<(const IPAddress& other) const;

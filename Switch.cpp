@@ -28,7 +28,7 @@ Switch::Switch(int num_p_balancers,
 }
 
 // helpers
-Request Switch::makeRandomRequest() {
+Request Switch::makeRandomRequest(char jobOverride) {
     // random distributions
     std::uniform_int_distribution<int> ip_dist(0, 255);
     std::uniform_int_distribution<int> time_dist(min_request_time, max_request_time);
@@ -47,9 +47,12 @@ Request Switch::makeRandomRequest() {
     IPAddress out(random_ip());
     int time = time_dist(generator);
     char job = (job_dist(generator) == 0) ? 'P' : 'S';
+    if (jobOverride == 'P' || jobOverride == 'S') job = jobOverride;
 
     // return request
-    return Request(in, out, time, job);
+    Request r(in, out, time, job);
+    std::cout << Color::MAGENTA << "Generated Request: " << r.in.getString() << " -> " << r.out.getString() << " | time=" << r.time << " | job=" << r.job << Color::RESET << "\n";
+    return r;
 }
 
 void Switch::addRequestToBalancer(Request& request) {
@@ -96,8 +99,7 @@ void Switch::start(int total_clock_cycles) {
                   << " (type P) has " << servers << " server(s); adding "
                   << requests_to_create << " requests" << Color::RESET << "\n";
         for (int i = 0; i < requests_to_create; ++i) {
-            Request r = makeRandomRequest();
-            r.job = 'P';
+            Request r = makeRandomRequest('P');
             lb.addRequest(r);
         }
     }
@@ -108,8 +110,7 @@ void Switch::start(int total_clock_cycles) {
                   << " (type S) has " << servers << " server(s); adding "
                   << requests_to_create << " requests" << Color::RESET << "\n";
         for (int i = 0; i < requests_to_create; ++i) {
-            Request r = makeRandomRequest();
-            r.job = 'S';
+            Request r = makeRandomRequest('S');
             lb.addRequest(r);
         }
     }
@@ -121,7 +122,6 @@ void Switch::start(int total_clock_cycles) {
         int num_requests = request_count_dist(generator);
         for (int i = 0; i < num_requests; ++i) {
             Request r = makeRandomRequest();
-            std::cout << Color::MAGENTA << "Generated Request: " << r.in.getString() << " -> " << r.out.getString() << " | time=" << r.time << " | job=" << r.job << Color::RESET << "\n";
             addRequestToBalancer(r);
         }
         goThroughClockCycleAllLoadBalancers(cycle);

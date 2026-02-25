@@ -14,7 +14,7 @@ class Switch {
         int max_request_time;
 
         // helpers
-        Request makeRandomRequest();
+        Request makeRandomRequest(char jobOverride = '\0'); // optionally add a specific job type
         void addRequestToBalancer(Request& request);
         void goThroughClockCycleAllLoadBalancers(int current_cycle);
     

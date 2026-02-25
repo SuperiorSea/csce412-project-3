@@ -26,7 +26,7 @@ class LoadBalancer {
         void removeServer();
         void updateScalingThresholds();
 
-        // getter
+        // getter (made public below so switch can inspect queue)
         std::size_t getQueueSize();
 
         // assigning requests/scaling
@@ -42,4 +42,7 @@ class LoadBalancer {
 
         // actions to be performed each cycle: assign requests and maybe scale
         void goThroughClockCycle(int current_cycle);
+
+        // expose queue size for external monitoring
+        std::size_t getQueueSize();
 };

@@ -9,6 +9,9 @@ class LoadBalancer {
         std::vector<WebServer> servers;
         RequestQueue request_queue;
 
+        // optional label used in log messages (e.g. "P" or "S")
+        std::string label;
+
         // for initialization
         int num_servers;
         int total_clock_cycles;
@@ -18,16 +21,13 @@ class LoadBalancer {
         int num_wait_clock_cycles;
 
         // for scaling
-        int min_queue_size_for_scaling;
-        int max_queue_size_for_scaling;
+        size_t min_queue_size_for_scaling;
+        size_t max_queue_size_for_scaling;
 
         // helpers
         void addServer();
         void removeServer();
         void updateScalingThresholds();
-
-        // getter (made public below so switch can inspect queue)
-        std::size_t getQueueSize();
 
         // assigning requests/scaling
         void assignRequests(int current_cycle);
@@ -35,7 +35,8 @@ class LoadBalancer {
 
     public:
         // constructor
-        LoadBalancer(int initial_servers, int num_wait_clock_cycles);
+        LoadBalancer(int initial_servers, int num_wait_clock_cycles,
+                     const std::string& label = "");
 
         // add received request to queue
         void addRequest(Request& request);
@@ -43,6 +44,6 @@ class LoadBalancer {
         // actions to be performed each cycle: assign requests and maybe scale
         void goThroughClockCycle(int current_cycle);
 
-        // expose queue size for external monitoring
+        // getter
         std::size_t getQueueSize();
 };

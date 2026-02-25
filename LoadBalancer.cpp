@@ -4,8 +4,9 @@
 #include <random>
 
 // constructor
-LoadBalancer::LoadBalancer(int initial_servers, int num_wait_clock_cycles)
- : last_scale_clock_cycle(0), num_wait_clock_cycles(num_wait_clock_cycles){
+LoadBalancer::LoadBalancer(int initial_servers, int num_wait_clock_cycles,
+                           const std::string& label)
+ : label(label), last_scale_clock_cycle(0), num_wait_clock_cycles(num_wait_clock_cycles){
     for (int i = 0; i < initial_servers; i++) {
         addServer();
     }
@@ -17,7 +18,9 @@ void LoadBalancer::addServer() {
     int new_id = servers.size() + 1; // simple id assignment
     servers.emplace_back(new_id);
     updateScalingThresholds();
-    std::cout << "[WEBSERVER ACTION] Added server with ID: " << new_id << " | Total servers: " << servers.size() << "\n";
+    std::cout << "[LOAD BALANCER ACTION";
+    if (!label.empty()) std::cout << " " << label;
+    std::cout << "] Added server with ID: " << new_id << " | Total servers: " << servers.size() << "\n";
 }
 
 void LoadBalancer::removeServer() {
@@ -25,7 +28,9 @@ void LoadBalancer::removeServer() {
         int removed_id = servers.back().getId();
         servers.pop_back();
         updateScalingThresholds();
-        std::cout << "[WEBSERVER ACTION] Removed server with ID: " << removed_id << " | Total servers: " << servers.size() << "\n";
+        std::cout << "[LOAD BALANCER ACTION";
+        if (!label.empty()) std::cout << " " << label;
+        std::cout << "] Removed server with ID: " << removed_id << " | Total servers: " << servers.size() << "\n";
     }
 }
 
@@ -42,7 +47,9 @@ void LoadBalancer::assignRequests(int current_cycle) {
             Request& r = request_queue.front();
             server.assignRequest(r, current_cycle);
             request_queue.pop();
-            std::cout << "[LOAD BALANCER ACTION] Assigned request to server " << server.getId() << " at cycle " << current_cycle << "\n";
+            std::cout << "[LOAD BALANCER ACTION";
+            if (!label.empty()) std::cout << " " << label;
+            std::cout << "] Assigned request to server " << server.getId() << " at cycle " << current_cycle << "\n";
         }
     }
 }

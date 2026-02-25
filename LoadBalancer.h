@@ -17,10 +17,6 @@ class LoadBalancer {
         int last_scale_clock_cycle;
         int num_wait_clock_cycles;
 
-        // for making random requests
-        int min_request_time;
-        int max_request_time;
-
         // for scaling
         int min_queue_size_for_scaling;
         int max_queue_size_for_scaling;

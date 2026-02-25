@@ -2,6 +2,7 @@
 #include "IPAddress.h"
 #include <iostream>
 #include <random>
+#include "Color.h"
 
 // static random engine used across all methods to avoid re-seeding every call
 static std::mt19937 generator(std::random_device{}());
@@ -85,17 +86,45 @@ void Switch::goThroughClockCycleAllLoadBalancers(int current_cycle) {
 }
 
 void Switch::start(int total_clock_cycles) {
-    std::default_random_engine generator;
-    for (int cycle = 0; cycle < total_clock_cycles; ++cycle) {
+
+    // preload each balancer with 100 requests per server
+    std::cout << Color::CYAN << "[SWITCH] Preloading requests at start..." << Color::RESET << "\n";
+    for (LoadBalancer& lb : p_load_balancers) {
+        int servers = lb.getServerCount();
+        int requests_to_create = 100 * servers;
+        std::cout << Color::CYAN << "  Balancer " << lb.getLabel()
+                  << " (type P) has " << servers << " server(s); adding "
+                  << requests_to_create << " requests" << Color::RESET << "\n";
+        for (int i = 0; i < requests_to_create; ++i) {
+            Request r = makeRandomRequest();
+            r.job = 'P';
+            lb.addRequest(r);
+        }
+    }
+    for (LoadBalancer& lb : s_load_balancers) {
+        int servers = lb.getServerCount();
+        int requests_to_create = 100 * servers;
+        std::cout << Color::CYAN << "  Balancer " << lb.getLabel()
+                  << " (type S) has " << servers << " server(s); adding "
+                  << requests_to_create << " requests" << Color::RESET << "\n";
+        for (int i = 0; i < requests_to_create; ++i) {
+            Request r = makeRandomRequest();
+            r.job = 'S';
+            lb.addRequest(r);
+        }
+    }
+
+    // go through clock cycles
+    for (int cycle = 1; cycle <= total_clock_cycles; ++cycle) {
         // generate random number of requests
         std::uniform_int_distribution<int> request_count_dist(0, 5);
         int num_requests = request_count_dist(generator);
         for (int i = 0; i < num_requests; ++i) {
             Request r = makeRandomRequest();
-            std::cout << r.in.getValue() << " -> " << r.out.getValue() << " | time=" << r.time << " | job=" << r.job << "\n";
+            std::cout << Color::MAGENTA << "Generated Request: " << r.in.getString() << " -> " << r.out.getString() << " | time=" << r.time << " | job=" << r.job << Color::RESET << "\n";
             addRequestToBalancer(r);
         }
         goThroughClockCycleAllLoadBalancers(cycle);
-        std::cout << "--- End of cycle " << cycle << " ---\n";
+        std::cout << Color::BLUE << "--- End of cycle " << cycle << " ---" << Color::RESET << "\n";
     }
 }

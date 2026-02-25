@@ -34,12 +34,23 @@ IPAddress::IPAddress(std::string addr) {
     address = result;
 }
 
-// methods
-
+// getters
 unsigned int IPAddress::getValue() {
     return address;
 }
 
+std::string IPAddress::getString() {
+    unsigned int a = (address >> 24) & 0xFF;
+    unsigned int b = (address >> 16) & 0xFF;
+    unsigned int c = (address >> 8) & 0xFF;
+    unsigned int d = address & 0xFF;
+    std::ostringstream oss;
+    oss << a << '.' << b << '.' << c << '.' << d;
+    return oss.str();
+}
+
+
+// comparison operators
 bool IPAddress::operator<(const IPAddress& other) const {
     return address < other.address;
 }

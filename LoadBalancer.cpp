@@ -1,5 +1,6 @@
 #include "LoadBalancer.h"
 #include "IPAddress.h"
+#include "Color.h"
 #include <iostream>
 #include <random>
 
@@ -18,9 +19,9 @@ void LoadBalancer::addServer() {
     int new_id = servers.size() + 1; // simple id assignment
     servers.emplace_back(new_id);
     updateScalingThresholds();
-    std::cout << "[LOAD BALANCER ACTION";
+    std::cout << Color::GREEN << "[LOAD BALANCER ACTION";
     if (!label.empty()) std::cout << " " << label;
-    std::cout << "] Added server with ID: " << new_id << " | Total servers: " << servers.size() << "\n";
+    std::cout << "] Added server with ID: " << new_id << " | Total servers: " << servers.size() << Color::RESET << "\n";
 }
 
 void LoadBalancer::removeServer() {
@@ -28,9 +29,9 @@ void LoadBalancer::removeServer() {
         int removed_id = servers.back().getId();
         servers.pop_back();
         updateScalingThresholds();
-        std::cout << "[LOAD BALANCER ACTION";
+        std::cout << Color::YELLOW << "[LOAD BALANCER ACTION";
         if (!label.empty()) std::cout << " " << label;
-        std::cout << "] Removed server with ID: " << removed_id << " | Total servers: " << servers.size() << "\n";
+        std::cout << "] Removed server with ID: " << removed_id << " | Total servers: " << servers.size() << Color::RESET << "\n";
     }
 }
 
@@ -47,9 +48,9 @@ void LoadBalancer::assignRequests(int current_cycle) {
             Request& r = request_queue.front();
             server.assignRequest(r, current_cycle);
             request_queue.pop();
-            std::cout << "[LOAD BALANCER ACTION";
+            std::cout << Color::YELLOW << "[LOAD BALANCER ACTION";
             if (!label.empty()) std::cout << " " << label;
-            std::cout << "] Assigned request to server " << server.getId() << " at cycle " << current_cycle << "\n";
+            std::cout << "] Assigned request to server " << server.getId() << " at cycle " << current_cycle << Color::RESET << "\n";
         }
     }
 }
@@ -80,7 +81,15 @@ void LoadBalancer::goThroughClockCycle(int current_cycle) {
     maybeScale(current_cycle);
 }
 
-// getter
+// getters
 std::size_t LoadBalancer::getQueueSize() {
     return request_queue.size();
+}
+
+int LoadBalancer::getServerCount() {
+    return static_cast<int>(servers.size());
+}
+
+std::string LoadBalancer::getLabel() {
+    return label;
 }

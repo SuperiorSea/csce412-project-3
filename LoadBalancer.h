@@ -44,6 +44,8 @@ class LoadBalancer {
         // actions to be performed each cycle: assign requests and maybe scale
         void goThroughClockCycle(int current_cycle);
 
-        // getter
+        // getters
         std::size_t getQueueSize();
+        int getServerCount();
+        std::string getLabel();
 };

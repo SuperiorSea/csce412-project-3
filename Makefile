@@ -1,5 +1,3 @@
-# Simple Makefile for CSCE-412 project 3
-
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 SRCS = main.cpp IPAddress.cpp Request.cpp RequestQueue.cpp WebServer.cpp LoadBalancer.cpp Switch.cpp
@@ -10,8 +8,6 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
-
-# implicit rule will handle .cpp -> .o
 
 clean:
 	rm -f $(OBJS) $(TARGET)

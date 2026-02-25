@@ -34,6 +34,12 @@ void LoadBalancer::updateScalingThresholds() {
     max_queue_size_for_scaling = 80 * servers.size();
 }
 
+
+// getter
+std::size_t LoadBalancer::getQueueSize() {
+    return request_queue.size();
+}
+
 // assign requests/scaling
 void LoadBalancer::assignRequests(int current_cycle) {
     // for each webserver, if its not busy and theres a request in the queue, assigne it

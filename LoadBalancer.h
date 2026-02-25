@@ -26,6 +26,9 @@ class LoadBalancer {
         void removeServer();
         void updateScalingThresholds();
 
+        // getter
+        std::size_t getQueueSize();
+
         // assigning requests/scaling
         void assignRequests(int current_cycle);
         void maybeScale(int current_cycle);

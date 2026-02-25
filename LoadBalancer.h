@@ -28,11 +28,19 @@ class LoadBalancer {
         // helpers
         void addServer();
         void removeServer();
+        void updateScalingThresholds();
 
-        // make random request (public so it can be tested)
+        // assigning requests/scaling
+        void assignRequests(int current_cycle);
+        void maybeScale(int current_cycle);
+
     public:
-        Request makeRandomRequest();
-
         // constructor
-        LoadBalancer(int num_servers, int total_clock_cycles, int num_wait_clock_cycles, int min_request_time, int max_request_time);
+        LoadBalancer(int initial_servers, int num_wait_clock_cycles);
+
+        // add received request to queue
+        void addRequest(Request& request);
+
+        // actions to be performed each cycle: assign requests and maybe scale
+        void goThroughClockCycle(int current_cycle);
 };

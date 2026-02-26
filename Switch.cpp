@@ -14,8 +14,9 @@ Switch::Switch(int num_p_balancers,
                int servers_per_s_balancer,
                int num_wait_clock_cycles,
                int min_request_time,
-               int max_request_time)
- : min_request_time(min_request_time), max_request_time(max_request_time) {
+               int max_request_time,
+               const std::vector<IPRange>& blocked_ranges)
+ : min_request_time(min_request_time), max_request_time(max_request_time), blocked_ranges(blocked_ranges) {
     // initialize load balancers
     for (int i = 0; i < num_p_balancers; i++) {
         std::string label = std::to_string(i+1) + "P";
@@ -28,6 +29,10 @@ Switch::Switch(int num_p_balancers,
 }
 
 // helpers
+/**
+ * Generate a request with random IPs and parameters.
+ * @param jobOverride if 'P' or 'S' forces job type, otherwise random
+ */
 Request Switch::makeRandomRequest(char jobOverride) {
     // random distributions
     std::uniform_int_distribution<int> ip_dist(0, 255);
@@ -55,7 +60,16 @@ Request Switch::makeRandomRequest(char jobOverride) {
     return r;
 }
 
+/**
+ * Attempt to route a request to the least-busy balancer, or drop if blocked.
+ */
 void Switch::addRequestToBalancer(Request& request) {
+    // check if this request should be blocked
+    if (isBlocked(request)) {
+        std::cout << Color::RED << "[SWITCH ACTION] Blocked IP: " << request.in.getString() << Color::RESET << "\n";
+        return;
+    }
+
     // check which balancer vector to use
     std::vector<LoadBalancer>& balancers = (request.job == 'P') ? p_load_balancers : s_load_balancers;
     
@@ -78,6 +92,21 @@ void Switch::addRequestToBalancer(Request& request) {
     }
 }
 
+bool Switch::isBlocked(Request& request) {
+    // check if the request's source IP is in any blocked range
+    for (const auto& range : blocked_ranges) {
+        unsigned int in_val = request.in.getValue();
+        unsigned int low_val = range.low.getValue();
+        unsigned int high_val = range.high.getValue();
+        
+        if (in_val >= low_val && in_val <= high_val) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/** Run one clock cycle on every balancer. */
 void Switch::goThroughClockCycleAllLoadBalancers(int current_cycle) {
     // run a clock cycle for each load balancer
     for (LoadBalancer& lb : p_load_balancers) {
@@ -89,6 +118,7 @@ void Switch::goThroughClockCycleAllLoadBalancers(int current_cycle) {
 }
 
 // iterate through every balancer and print its server count and queue size
+/** Produce live/logged status report at interval. */
 void Switch::reportStatus(int current_cycle) {
     // helper that writes the same text to both cout (log) and cerr (console)
     auto emit = [&](const std::string &text) {
@@ -96,7 +126,7 @@ void Switch::reportStatus(int current_cycle) {
         std::cerr << text;
     };
 
-    emit(Color::RED + std::string("[SWITCH] Status report at cycle ") + std::to_string(current_cycle) + "\n");
+    emit(Color::TURQUOISE + std::string("[SWITCH] Status report at cycle ") + std::to_string(current_cycle) + "\n");
     for (LoadBalancer& lb : p_load_balancers) {
         emit("  Balancer " + lb.getLabel()
              + " (P) servers=" + std::to_string(lb.getServerCount())
@@ -110,6 +140,9 @@ void Switch::reportStatus(int current_cycle) {
     emit(Color::RESET);
 }
 
+/**
+ * Main simulation loop: preload, generate, assign, and report.
+ */
 void Switch::start(int total_clock_cycles) {
 
     // preload each balancer with 100 requests per server

@@ -1,5 +1,6 @@
 #pragma once
 #include "LoadBalancer.h"
+#include "IPAddress.h"
 #include <vector>
 #include <random>
 
@@ -13,10 +14,14 @@ class Switch {
         int min_request_time;
         int max_request_time;
 
+        // IP ranges to block
+        std::vector<IPRange> blocked_ranges;
+
         // helpers
         Request makeRandomRequest(char jobOverride = '\0'); // optionally add a specific job type
         void addRequestToBalancer(Request& request);
         void goThroughClockCycleAllLoadBalancers(int current_cycle);
+        bool isBlocked(Request& request);  // check if request should be blocked
     
     public:
         // constructor
@@ -26,7 +31,8 @@ class Switch {
                int servers_per_s_balancer,
                int num_wait_clock_cycles,
                int min_request_time,
-               int max_request_time);
+               int max_request_time,
+               const std::vector<IPRange>& blocked_ranges = {});
         
         // status report of switch
         void reportStatus(int current_cycle);

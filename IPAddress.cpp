@@ -35,11 +35,11 @@ IPAddress::IPAddress(std::string addr) {
 }
 
 // getters
-unsigned int IPAddress::getValue() {
+unsigned int IPAddress::getValue() const {
     return address;
 }
 
-std::string IPAddress::getString() {
+std::string IPAddress::getString() const {
     unsigned int a = (address >> 24) & 0xFF;
     unsigned int b = (address >> 16) & 0xFF;
     unsigned int c = (address >> 8) & 0xFF;

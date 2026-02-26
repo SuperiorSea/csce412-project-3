@@ -28,6 +28,9 @@ class Switch {
                int min_request_time,
                int max_request_time);
         
+        // status report of switch
+        void reportStatus(int current_cycle);
+        
         // starts the program
         void start(int total_clock_cycles);
 };

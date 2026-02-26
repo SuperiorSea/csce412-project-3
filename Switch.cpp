@@ -88,6 +88,28 @@ void Switch::goThroughClockCycleAllLoadBalancers(int current_cycle) {
     }
 }
 
+// iterate through every balancer and print its server count and queue size
+void Switch::reportStatus(int current_cycle) {
+    // helper that writes the same text to both cout (log) and cerr (console)
+    auto emit = [&](const std::string &text) {
+        std::cout << text;
+        std::cerr << text;
+    };
+
+    emit(Color::RED + std::string("[SWITCH] Status report at cycle ") + std::to_string(current_cycle) + "\n");
+    for (LoadBalancer& lb : p_load_balancers) {
+        emit("  Balancer " + lb.getLabel()
+             + " (P) servers=" + std::to_string(lb.getServerCount())
+             + " queue=" + std::to_string(lb.getQueueSize()) + "\n");
+    }
+    for (LoadBalancer& lb : s_load_balancers) {
+        emit("  Balancer " + lb.getLabel()
+             + " (S) servers=" + std::to_string(lb.getServerCount())
+             + " queue=" + std::to_string(lb.getQueueSize()) + "\n");
+    }
+    emit(Color::RESET);
+}
+
 void Switch::start(int total_clock_cycles) {
 
     // preload each balancer with 100 requests per server
@@ -124,7 +146,13 @@ void Switch::start(int total_clock_cycles) {
             Request r = makeRandomRequest();
             addRequestToBalancer(r);
         }
-        goThroughClockCycleAllLoadBalancers(cycle);
+            goThroughClockCycleAllLoadBalancers(cycle);
+
+        // report every 50 cycles
+        if (cycle % 50 == 0) {
+            reportStatus(cycle);
+        }
+
         std::cout << Color::BLUE << "--- End of cycle " << cycle << " ---" << Color::RESET << "\n";
     }
 }

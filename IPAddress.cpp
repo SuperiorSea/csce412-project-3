@@ -1,3 +1,18 @@
+/**
+ * @file IPAddress.cpp
+ * @brief Implementation of the IPAddress class and related functionality.
+ *
+ * Provides definitions for constructors, comparison operators, and
+ * conversion utilities declared in IPAddress.h.
+ *
+ * This file handles:
+ * - Conversion between dotted-decimal string format and 32-bit integer format
+ * - Comparison operations between IP addresses
+ * - Retrieval of numeric and string representations
+ *
+ * Part of the load balancer simulation project.
+ */
+
 #include "IPAddress.h"
 #include <sstream>
 #include <stdexcept>

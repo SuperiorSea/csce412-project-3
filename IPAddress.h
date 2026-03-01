@@ -1,3 +1,13 @@
+/**
+ * @file IPAddress.h
+ * @brief Defines the IPAddress class and IPRange structure for IPv4 handling.
+ *
+ * Provides functionality for representing IPv4 addresses as 32-bit integers,
+ * converting between integer and dotted-decimal formats, and performing
+ * comparison operations. Also defines IPRange for representing blocked or
+ * monitored IP intervals.
+ */
+
 #pragma once
 #include <string>
 

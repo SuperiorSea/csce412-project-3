@@ -50,7 +50,7 @@ void LoadBalancer::removeServer() {
         servers.pop_back();
         updateScalingThresholds();
 
-        std::cout << Color::YELLOW << "[LOAD BALANCER ACTION";
+        std::cout << Color::GREEN << "[LOAD BALANCER ACTION";
         if (!label.empty()) std::cout << " " << label;
         std::cout << "] Removed server with ID: " << removed_id
                   << " | Total servers: " << servers.size()

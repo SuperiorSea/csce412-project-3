@@ -110,6 +110,66 @@ void Switch::addRequestToBalancer(Request& request) {
 }
 
 /**
+ * @brief Calculates the total number of queued requests across all load balancers.
+ *
+ * Iterates through all Processing (P) and Streaming (S) load balancers
+ * managed by the Switch and sums their individual queue sizes.
+ *
+ * @return Total number of pending requests across the entire system.
+ */
+std::size_t Switch::getTotalQueueSize() {
+    std::size_t total = 0;
+
+    for (LoadBalancer& lb : p_load_balancers) {
+        total += lb.getQueueSize();
+    }
+
+    for (LoadBalancer& lb : s_load_balancers) {
+        total += lb.getQueueSize();
+    }
+
+    return total;
+}
+
+
+/**
+ * @brief Calculates the total number of Processing (P) servers.
+ *
+ * Iterates through all Processing load balancers and sums the number
+ * of servers managed by each.
+ *
+ * @return Total count of P-type WebServers.
+ */
+int Switch::getServerCountP() {
+    int total = 0;
+
+    for (LoadBalancer& lb : p_load_balancers) {
+        total += lb.getServerCount();
+    }
+
+    return total;
+}
+
+
+/**
+ * @brief Calculates the total number of Streaming (S) servers.
+ *
+ * Iterates through all Streaming load balancers and sums the number
+ * of servers managed by each.
+ *
+ * @return Total count of S-type WebServers.
+ */
+int Switch::getServerCountS() {
+    int total = 0;
+
+    for (LoadBalancer& lb : s_load_balancers) {
+        total += lb.getServerCount();
+    }
+
+    return total;
+}
+
+/**
  * @brief Checks whether a request's source IP is within any blocked IP range.
  */
 bool Switch::isBlocked(Request& request) {
@@ -172,6 +232,18 @@ void Switch::reportStatus(int current_cycle) {
  */
 void Switch::start(int total_clock_cycles) {
 
+    // summary statistics
+    std::size_t starting_queue_size = 0;
+    std::size_t ending_queue_size = 0;
+    int total_requests_generated = 0;
+    int total_requests_blocked = 0;
+    int starting_servers_p = getServerCountP();
+    int starting_servers_s = getServerCountS();
+    int total_starting_servers = starting_servers_p + starting_servers_s;
+    int ending_servers_p = 0;
+    int ending_servers_s = 0;
+    int total_ending_servers = 0;
+
     // preload each balancer with 100 requests per server
     std::cout << Color::CYAN << "[SWITCH] Preloading requests at start..." << Color::RESET << "\n";
     for (LoadBalancer& lb : p_load_balancers) {
@@ -197,6 +269,9 @@ void Switch::start(int total_clock_cycles) {
         }
     }
 
+    // get starting queue size
+    starting_queue_size = getTotalQueueSize();
+
     // go through clock cycles
     for (int cycle = 1; cycle <= total_clock_cycles; ++cycle) {
         // generate random number of requests
@@ -204,6 +279,10 @@ void Switch::start(int total_clock_cycles) {
         int num_requests = request_count_dist(generator);
         for (int i = 0; i < num_requests; ++i) {
             Request r = makeRandomRequest();
+            total_requests_generated++;
+            if (isBlocked(r)) {
+                total_requests_blocked++;
+            }
             addRequestToBalancer(r);
         }
         goThroughClockCycleAllLoadBalancers(cycle);
@@ -216,4 +295,23 @@ void Switch::start(int total_clock_cycles) {
         std::cout << Color::BLUE << "--- End of cycle " << cycle << " ---"
                   << Color::RESET << "\n";
     }
+
+    // get ending stats size
+    ending_queue_size = getTotalQueueSize();
+    ending_servers_p = getServerCountP();
+    ending_servers_s = getServerCountS();
+    total_ending_servers = ending_servers_p + ending_servers_s;
+
+    // print summary statistics
+    std::cout << Color::GREEN << "\n[SWITCH] Simulation complete!\n"
+              << "  Total requests generated: " << total_requests_generated << "\n"
+              << "  Total requests blocked: " << total_requests_blocked << "\n"
+              << "  Starting queue size: " << starting_queue_size << "\n"
+              << "  Ending queue size: " << ending_queue_size << "\n"
+              << "  Starting servers (P): " << starting_servers_p << "\n"
+              << "  Starting servers (S): " << starting_servers_s << "\n"
+              << "  Total starting servers: " << total_starting_servers << "\n"
+              << "  Ending servers (P): " << ending_servers_p << "\n"
+              << "  Ending servers (S): " << ending_servers_s << "\n"
+                << "  Total ending servers: " << total_ending_servers << "\n";
 }

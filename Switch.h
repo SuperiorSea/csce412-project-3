@@ -95,6 +95,10 @@ private:
      */
     bool isBlocked(Request& request);
 
+    std::size_t getTotalQueueSize();
+    int getServerCountP();
+    int getServerCountS();
+
 public:
     /**
      * @brief Constructs the Switch and initializes all load balancers.
